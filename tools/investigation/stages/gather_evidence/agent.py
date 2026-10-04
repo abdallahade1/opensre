@@ -402,6 +402,69 @@ def get_investigation_agent_class() -> type[ConnectedInvestigationAgent]:
     return ConnectedInvestigationAgent
 
 
+class MitigationInvestigationAgent(ConnectedInvestigationAgent):
+    """Investigation agent that must APPLY a fix, not just describe one.
+
+    In mitigation the root cause is already known and the job is to execute a
+    corrective kubectl command. The base loop concludes as soon as the model
+    writes a report, so a model that recommends a fix without running it exits
+    successfully ("stops short of executing the write"). This subclass watches
+    executed tool calls and refuses to accept a conclusion until a state-changing
+    kubectl command has actually run.
+    """
+
+    _MUTATING_KUBECTL_VERBS = (
+        "apply", "create", "expose", "patch", "edit", "replace", "scale",
+        "rollout", "delete", "set ", "label", "annotate", "cordon",
+        "uncordon", "drain", "taint",
+    )
+
+    def _record_tool_end(self, tc: ToolCall, output: Any) -> None:
+        # Base behaviour (tracking + event emit) still runs.
+        super()._record_tool_end(tc, output)
+        # Detect whether this call executed a mutating kubectl command.
+        try:
+            blob = f"{tc.input}".lower()
+        except Exception:
+            blob = ""
+        if "kubectl" in blob and any(v in blob for v in self._MUTATING_KUBECTL_VERBS):
+            out = f"{output}".lower()
+            if "error" not in out and "rejected" not in out and "denied" not in out:
+                self._mitigation_write_done = True
+
+    def _should_accept_conclusion(
+        self,
+        *,
+        evidence_count: int,  # noqa: ARG002 — base class signature
+        iteration: int,
+    ) -> tuple[bool, str | None]:
+        if getattr(self, "_mitigation_write_done", False):
+            return super()._should_accept_conclusion(
+                evidence_count=evidence_count, iteration=iteration
+            )
+
+        # Leave room for a final text-only iteration near the loop cap.
+        if iteration >= MAX_INVESTIGATION_LOOPS - 2:
+            return super()._should_accept_conclusion(
+                evidence_count=evidence_count, iteration=iteration
+            )
+
+        # Stop nudging after a few tries so we never loop forever.
+        count = getattr(self, "_mitigation_nudge_count", 0) + 1
+        self._mitigation_nudge_count = count
+        if count > 3:
+            return super()._should_accept_conclusion(
+                evidence_count=evidence_count, iteration=iteration
+            )
+
+        return False, (
+            "You have NOT yet applied a fix — you have only inspected or "
+            "recommended one. Call exec_kubectl_cmd_safely now via call_sregym_tool "
+            "with a state-changing kubectl command (create / apply / patch / "
+            "rollout restart / scale / delete) that resolves the known root cause, "
+            "before writing your final answer."
+        )
+
 class CLIBackedInvestigationAgent(ConnectedInvestigationAgent):
     """Investigation agent for CLI-backed LLMs (Codex, Claude Code CLI, etc.).
 

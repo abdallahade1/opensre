@@ -60,6 +60,7 @@ Extract these fields from the message text:
   - "coralogix" for Coralogix or DataPrime
   - "cloudwatch" for AWS CloudWatch alarms
   - "eks" for EKS, CrashLoopBackOff, OOMKilled, Kubernetes pods, or kube_namespace
+  - "sregym" for SREGym benchmark incidents or when the alert mentions SREGym
   - "alertmanager" for Prometheus/Alertmanager-specific fields
   - "signoz" for SigNoz, signoz.io, or signoz_metrics
   Leave null if truly unknown.

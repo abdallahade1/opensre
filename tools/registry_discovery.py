@@ -85,6 +85,7 @@ INTEGRATION_TOOL_PACKAGES: tuple[str, ...] = (
     "integrations.twilio.tools",
     "integrations.vercel.tools",
     "integrations.victoria_logs.tools",
+    "integrations.sregym.tools",
     "integrations.x_mcp.tools",
 )
 

@@ -47,6 +47,7 @@ ALERT_SOURCE_ROUTING: dict[str, AlertSourceRouting] = {
     "cloudwatch": _routing(("cloudwatch", "ec2", "rds", "cloudtrail"), ("cloudwatch",)),
     # ec2/cloudtrail stay relevance-only — seed only the cluster integration.
     "eks": _routing(("eks", "ec2", "cloudtrail"), ("eks",)),
+    "sregym": _routing(("sregym",), ("sregym",)),
     # eks/cloudtrail stay relevance-only — seed grafana + cloudwatch dashboards/logs.
     "alertmanager": _routing(
         ("eks", "cloudwatch", "grafana", "cloudtrail"),

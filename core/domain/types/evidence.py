@@ -40,6 +40,7 @@ EvidenceSource = Literal[
     "bitbucket",
     "openclaw",
     "posthog_mcp",
+    "sregym",
     "sentry_mcp",
     "x_mcp",
     "mysql",

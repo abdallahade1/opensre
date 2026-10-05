@@ -1,7 +1,7 @@
 # SREGym Integration for OpenSRE (MCP-based)
 
 This branch integrates the **OpenSRE** agent with the **[SREGym](https://github.com/SREGym/SREGym)**
-benchmark so that OpenSRE can be evaluated on live Kubernetes fault scenarios —
+benchmark so that OpenSRE can be evaluated on live Kubernetes fault scenarios,
 investigating and **acting on** a broken cluster, not just describing what it would do.
 
 It was built as part of the UIUC++ SRSE 2026 research program (Prof. Tianyin Xu's group),
@@ -16,7 +16,7 @@ SREGym exposes its agent interface as **MCP tool-servers over SSE** — five end
 as an external subprocess, this integration connects OpenSRE **directly** to those
 endpoints and drives investigations through OpenSRE's own programmatic
 `run_investigation` API. SREGym injects a fault, and OpenSRE investigates the live
-cluster from a minimal generated alert — no per-problem alert files are required.
+cluster from a minimal generated alert, no per-problem alert files are required.
 
 Because OpenSRE's `/kubectl` tool (`exec_kubectl_cmd_safely`) executes real kubectl
 commands (read **and** write), this path lets OpenSRE perform both **diagnosis** and
